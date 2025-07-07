@@ -1,0 +1,6 @@
+In this input_data folder, add your particle data set. 
+
+The rest of code is designed to extract data from a UrQMD output dataset. 
+Hence, if you are using an UrQMD dataset, upload it directly in this folder, and include the filepath in the /config/config.ini file.
+
+If you are using a different model to obtain the particle data set, modify the src codes accordingly. 

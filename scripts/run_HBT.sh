@@ -1,20 +1,18 @@
 #!/bin/bash
 
-# Set number of loops
 num_loops=5
 successful_runs=0
 
-# Set up directories
 mkdir -p run_HBT_outputs
-#mkdir -p input_data
+
 echo ""
 echo "Temporary directory run_HBT_outputs created"
+echo "Copying required files to current directory"
+echo ""
 
-# Copy required files to current directory
-cp config/config.ini .  # Essential configuration
-cp input_data/particle_list_set_0.bin .  # Input data
+cp config/config.ini .
+cp input_data/particle_list_set_0.bin .
 
-# Verify files exist
 if [ ! -f "config.ini" ]; then
     echo "ERROR: config.ini not found!" >&2
     exit 1
@@ -25,20 +23,18 @@ if [ ! -f "particle_list_set_0.bin" ]; then
     exit 1
 fi
 
-# Compile ALL required files
-g++ -o run CQinv_Calculation.cpp main.cpp -fopenmp -O3
+echo "All necessary files copied successfully"
+
+g++ -o run CQ_Calculation.cpp main.cpp -fopenmp -O3
 
 echo "$num_loops runs started..."
 echo ""
 
-# Run the program num_loops times
 for ((i = 1; i <= num_loops; i++)); do
 
-    # Run the program in the background with nohup
     nohup ./run > "run_HBT_outputs/run_${i}.log" 2>&1 &
-    wait  # Wait for the background process to finish
+    wait 
 
-    # Check and move the output file
     if [ -f "Cqinv_kT_0.data" ]; then
         mv Cqinv_kT_0.data Cqinv_kT_0_${i}.data
         mv Cqinv_kT_0_${i}.data run_HBT_outputs/
@@ -46,18 +42,14 @@ for ((i = 1; i <= num_loops; i++)); do
         echo "Run $i completed successfully"
     else
         echo "ERROR: Cqinv_kT_0.data not found after run $i" >&2
-        # Don't decrement counter, just report error
     fi
 done
 
 echo "Completed $successful_runs successful runs out of $num_loops"
 
-# Process results and calculate averages
 if [ "$successful_runs" -gt 0 ]; then
-    # Create a list of all data files
     data_files=(run_HBT_outputs/Cqinv_kT_0_*.data)
 
-    # Use awk to process all files at once
     awk -v total_runs="$successful_runs" '
     BEGIN {
         # Initialize arrays
@@ -86,12 +78,10 @@ if [ "$successful_runs" -gt 0 ]; then
     }' "${data_files[@]}" > Avg_Cqinv.data
     echo "Averages calculated. Results saved to Avg_Cqinv.data"
 else
-    echo "No successful runs. Creating empty Avg_Cqinv.data"
+    echo "No successful runs :("
 fi
 
-# Clean up - remove the temporary output directory
 rm -rf run_HBT_outputs
 echo "The newly created temporary directory run_HBT_outputs has been removed"
 
-# Cleanup copied files
-rm config.ini particle_list_set_0.bin
+rm -rf config.ini particle_list_set_0.bin

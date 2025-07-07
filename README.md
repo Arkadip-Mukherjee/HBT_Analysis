@@ -2,7 +2,7 @@
 
 This is my HBT framework to calculate the HBT correlation function. 
 
-I have used a hybrid framework, involving MUSIC + iSS + UrQMD, to generate the particle data set. For some other model or output dataset, the files in src can be modified accordingly. 
+I have used a hybrid framework, involving MUSIC + iSS + UrQMD, to generate the particle data set. For some other model or output dataset, the files in /src/ can be modified accordingly. 
 
 For the time being, this HBT_Analysis only computes the 1-D and 3-D correlation functions, and provides output datafiles.
 * For 1-D correlation function, the output files have two columns: Qinv and C(Qinv)

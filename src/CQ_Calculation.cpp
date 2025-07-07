@@ -14,8 +14,6 @@
 
 using namespace std;
 
-const double pion_plus_mass = 0.139570;
-const double kaon_plus_mass = 0.493677;
 const double hbar_c = 0.197326980;
 
 // Function to get PID from UrQMD MCID
@@ -57,7 +55,7 @@ double rapidity_calculation(double e, double pz){
 	return std::abs(rap);
 }
 
-// Function to read the Particle Data Set from input file
+// Function to read the Particle Data Set from input_file
 std::vector<std::vector<Particle>> readParticleData(const Config& config) {
 	std::ifstream file(config.input_filename, std::ios::binary | std::ios::in);
 	if (!file) {
@@ -146,7 +144,6 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 				double Mt = std::sqrt(Mt_sq);
 
 				if (K_perp < config.kT_min || K_perp > config.kT_max) continue;
-
 				int Kperp_index = static_cast<int>((K_perp - config.kT_min) / kT_bin_width);
 				if (Kperp_index >= config.kT_num_bins) continue;
 				
@@ -156,9 +153,7 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 				double qe = p1.e  - p2.e;
 				
 				double qinv = std::sqrt(-(qe*qe - qx*qx - qy*qy - qz*qz));
-
 				if (qinv < config.Q_min || qinv > config.Q_max) continue;
-
 				int qinv_index = static_cast<int>((qinv - config.Q_min) / Q_bin_width);
 				if (qinv_index >= config.Q_num_bins) continue;
 
@@ -170,10 +165,8 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 				local_Qinvstore[Kperp_index][qinv_index] += qinv;
 				
 				N_same++;
-					
 			}
 		}
-		
 		if (event%100 == 0) std::cout << "Calculations for Same Event Number:  " << event << "  done." << std::endl ;
 	}
 	
@@ -208,7 +201,6 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 			double new_px1 = p1.px * cosphi - p1.py * sinphi;
 			double new_py1 = p1.px * sinphi + p1.py * cosphi;
 			
-		
 			for (size_t j = i+1; j < ev_particles.size(); j++) {
 				const auto& p2 = mixedev_particles[j];
 
@@ -233,7 +225,6 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 				double qe = p1.e  - p2.e;
 
 				double qinv = std::sqrt(-(qe*qe - qx*qx - qy*qy - qz*qz));
-
 				if (qinv < config.Q_min || qinv > config.Q_max) continue;
 				int qinv_index = static_cast<int>((qinv - config.Q_min) / Q_bin_width);
 				if (qinv_index >= config.Q_num_bins) continue;
@@ -243,12 +234,10 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 				N_mixed++;		
 			}
 		}
-		
 		if (event%100 == 0) std::cout << "Calculations for Mixed Event Number:  " << event << "  done." << std::endl ;
 	}
 	}
 	
-
 	// Merge thread-local results
 	for (int tid = 0; tid < omp_get_max_threads(); tid++) {
 		for (int kt = 0; kt < config.kT_num_bins; kt++) {
@@ -261,7 +250,6 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 		}
 	}
 
-
 	// Write output files
 	for (int kTbin = 0; kTbin < config.kT_num_bins; kTbin++) { 
 		std::string filename = "Cqinv_kT_" + std::to_string(kTbin) + ".data"; // CHANGE THE FILENAME AS PER CONVENIENCE
@@ -273,7 +261,7 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 			double correlfunc = 1 + ((numerator[kTbin][ii] / N_same) / (denominator[kTbin][ii] / N_mixed));
 			double Qinv_val = Qinv_Store[kTbin][ii] / Num_Pairs[kTbin][ii] ;
 
-			file << std::scientific << Qinv_val << "  " << correlfunc << "\n";
+			file << std::scientific << Qinv_val << "   " << correlfunc << "\n";
 		}
 		file.close();
 	}
@@ -329,7 +317,6 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 	std::vector<std::vector<std::vector<std::vector<std::vector<double>>>>> local_Q_side(omp_get_max_threads(), Q_side);
 	std::vector<std::vector<std::vector<std::vector<std::vector<double>>>>> local_Q_long(omp_get_max_threads(), Q_long);
 
-	
 	
 	// =============================================  FOR SAME EVENT  ============================================== //
 
@@ -399,7 +386,6 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 				if (qside_index < 0 || qside_index >= config.Q_num_bins) continue;
 				if (qlong_index < 0 || qlong_index >= config.Q_num_bins) continue;
 				
-
 				double cosqx = std::cos((qe * (p1.t - p2.t) - qo * (p1.x - p2.x) 
 				- qs * (p1.y - p2.y) - ql * (p1.z - p2.z)) / hbar_c);
 				
@@ -409,11 +395,9 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 				local_Qs[Kperp_index][qout_index][qside_index][qlong_index] += qs;
 				local_Ql[Kperp_index][qout_index][qside_index][qlong_index] += ql;
 				
-				N_same++;
-					
+				N_same++;	
 			}
 		}
-		
 		if (event%100 == 0) std::cout << "Calculations for Same Event Number:  " << event << "  done." << std::endl ;
 	}
 	
@@ -448,7 +432,6 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 			double new_px1 = p1.px * cosphi - p1.py * sinphi;
 			double new_py1 = p1.px * sinphi + p1.py * cosphi;
 			
-		
 			for (size_t j = i+1; j < ev_particles.size(); j++) {
 				const auto& p2 = mixedev_particles[j];
 
@@ -510,7 +493,6 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 	}
 	}
 	
-
 	// Merge thread-local results
 	for (int tid = 0; tid < omp_get_max_threads(); tid++) {
 		for (int kt = 0; kt < config.kT_num_bins; kt++) {
@@ -529,7 +511,6 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 		}
 	}
 
-
 	// Write output files
 	for (int kTbin = 0; kTbin < config.kT_num_bins; kTbin++) { 
 		std::string filename = "Cq3D_kT_" + std::to_string(kTbin) + ".data"; // CHANGE THE FILENAME AS PER CONVENIENCE
@@ -540,22 +521,17 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 					if (denominator[kTbin][ii][jj][kk] == 0) continue;
 					if (numerator[kTbin][ii][jj][kk] == 0) continue;
 
-					double correlfunc = 1 + ((numerator[kTbin][ii][jj][kk] / N_same) / 
-								(denominator[kTbin][ii][jj][kk] / N_mixed));
+					double correlfunc = 1 + ((numerator[kTbin][ii][jj][kk] / N_same) / (denominator[kTbin][ii][jj][kk] / N_mixed));
 								
 					double Qout_val = Q_out[kTbin][ii][jj][kk] / Num_Pairs[kTbin][ii][jj][kk] ;
 					double Qside_val = Q_side[kTbin][ii][jj][kk] / Num_Pairs[kTbin][ii][jj][kk] ;
 					double Qlong_val = Q_long[kTbin][ii][jj][kk] / Num_Pairs[kTbin][ii][jj][kk] ;
 
-					file << std::scientific << Qout_val << "  " << Qside_val << "  " 
-								<< Qlong_val << "  " << correlfunc << "\n";
+					file << std::scientific << Qout_val  << "   " << Qside_val  << "   " 
+								<< Qlong_val << "   " << correlfunc << " \n";
 				}
 			}
 		}
 		file.close();
 	}
 }
-
-    
-    
-    

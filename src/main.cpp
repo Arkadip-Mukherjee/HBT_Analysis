@@ -48,9 +48,8 @@ Config readConfig(const std::string& configFile) {
 }
 
 int main() {
-	Config config = readConfig("/home/arkadip/HBT_Analysis/config/config.ini");
+	Config config = readConfig("/HBT_Analysis/config/config.ini"); // Check the correct filepath
 	auto particles = readParticleData(config);
-
 	cout << "\nWhich correlation analysis would you like to run?\n"
 	     << "  1) 1D  [C(Qinv)]\n"
 	     << "  2) 3D  [C(Qout, Qside, Qlong)]\n"
@@ -78,6 +77,5 @@ int main() {
 			cerr << "Choice must be 1 or 2. Exiting.\n";
 		return 1;
 	}
-
 	return 0;
 }

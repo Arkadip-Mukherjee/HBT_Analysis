@@ -7,6 +7,7 @@
 
 struct Particle {
     double e, px, py, pz, x, y, z, t;
+    int pid;
 };
 
 struct Config {

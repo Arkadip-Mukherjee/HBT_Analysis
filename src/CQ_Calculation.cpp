@@ -73,10 +73,12 @@ std::vector<std::vector<Particle>> readParticleData(const Config& config) {
 			float particle_array[11];
 			file.read(reinterpret_cast<char*>(particle_array), sizeof(float) * 11);
 
-			int pid = get_PID_from_urqmd_MCID(static_cast<int>(particle_array[1]), static_cast<int>(particle_array[2]));
-			if (std::find(config.pid_list.begin(), config.pid_list.end(), pid) != config.pid_list.end()) {
+			int pid_store = get_PID_from_urqmd_MCID(static_cast<int>(particle_array[1]), static_cast<int>(particle_array[2]));
+			if (std::find(config.pid_list.begin(), config.pid_list.end(), pid_store) != config.pid_list.end()) {
 				count++;
 				Particle p;
+				p.pid = pid_store;
+				p.mass = particle_array[0]
 				p.t = particle_array[3];
 				p.x = particle_array[4];
 				p.y = particle_array[5];
@@ -131,6 +133,8 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 			const auto& p1 = ev_particles[i];
 			for (size_t j = i+1; j < ev_particles.size(); j++) {
 				const auto& p2 = ev_particles[j];
+
+				if (p1.pid != p2.pid) continue; //To ensure pairing between identical particles only
 
 				double Kx = 0.5*(p1.px + p2.px);
 				double Ky = 0.5*(p1.py + p2.py);
@@ -204,6 +208,8 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 			for (size_t j = i+1; j < ev_particles.size(); j++) {
 				const auto& p2 = mixedev_particles[j];
 
+				if (p1.pid != p2.pid) continue; //To ensure pairing between identical particles only
+				
 				double Kx = 0.5*(new_px1 + p2.px);
 				double Ky = 0.5*(new_py1 + p2.py);
 				double Kz = 0.5*(p1.pz + p2.pz);
@@ -338,6 +344,8 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 			for (size_t j = i+1; j < ev_particles.size(); j++) {
 				const auto& p2 = ev_particles[j];
 
+				if (p1.pid != p2.pid) continue; //To ensure pairing between identical particles only
+				
 				double Kx = 0.5*(p1.px + p2.px);
 				double Ky = 0.5*(p1.py + p2.py);
 				double Kz = 0.5*(p1.pz + p2.pz);
@@ -434,6 +442,8 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 			
 			for (size_t j = i+1; j < ev_particles.size(); j++) {
 				const auto& p2 = mixedev_particles[j];
+
+				if (p1.pid != p2.pid) continue; //To ensure pairing between identical particles only
 
 				double Kx = 0.5*(new_px1 + p2.px);
 				double Ky = 0.5*(new_py1 + p2.py);

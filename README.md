@@ -10,6 +10,19 @@ For the time being, this HBT_Analysis only computes the 1-D and 3-D correlation 
 
 These output files can be used to plot the correlation functions or to fit them to obtain the HBT radii values. 
 
+## Repository Overview
+
+Below, I provide an overview of the different folders present in this repository, as well as what each folder contains:
+
+| Folder        | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `config/`       | Contains config.ini file for providing parameter configuration values.                 |
+|`input_data/`  | Include the particle data set from which all necessary data are to be extracted  |
+| `scripts/`    | Contains bash script as a separate way to execute the entire framework without using Makefile.|
+| `src/`        | Core source codes, header files and main.cpp file for analysis, fitting, and computations.                  |
+| `sample_outputs/`    | Contains generated results, including graphs, tables, and processed data. These are samples and were not used for original analysis purposes           |
+
+
 I will further modify the existing codes as well as add new codes to incorporate the fitting of the correlation functions and calculate the HBT radii values. 
 
 The repository will soon be updated. Stay tuned! 

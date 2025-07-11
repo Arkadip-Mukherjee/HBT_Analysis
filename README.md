@@ -18,9 +18,9 @@ Below, I provide an overview of the different folders present in this repository
 |---------------|-----------------------------------------------------------------------------|
 | `config/`       | Contains config.ini file for providing parameter configuration values.                 |
 |`input_data/`  | Include the particle data set from which all necessary data are to be extracted  |
+| `sample_outputs/`    | Contains generated results, including graphs, tables, and processed data. These are mere samples used to verify proper working of codes and were not used for original analysis purposes           |
 | `scripts/`    | Contains bash script as a separate way to execute the entire framework without using Makefile.|
 | `src/`        | Core source codes, header files and main.cpp file for analysis, fitting, and computations.                  |
-| `sample_outputs/`    | Contains generated results, including graphs, tables, and processed data. These are samples and were not used for original analysis purposes           |
 
 
 I will further modify the existing codes as well as add new codes to incorporate the fitting of the correlation functions and calculate the HBT radii values. 

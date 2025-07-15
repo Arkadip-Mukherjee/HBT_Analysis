@@ -187,26 +187,22 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 
 		int tid = omp_get_thread_num();
 		auto& local_den = local_denominators[tid];
-		
-		const double random_angle_phi = dist(gen);
-//		std::cout << "Random Angle:" << random_angle_phi << "  \n";
-
 		const auto& ev_particles = particles[event];
 		
 	for (int mixedev = 0; mixedev < config.MixedEvents; mixedev++){
 	
-		const auto& mixedev_particles = particles[mixedev];
+		const double random_angle_phi = dist(gen);
+		const double cosphi = std::cos(random_angle_phi);
+		const double sinphi = std::sin(random_angle_phi);
+	
 		for (size_t i = 0; i < ev_particles.size(); i++) {
 			const auto& p1 = ev_particles[i];
-		
-			const double cosphi = std::cos(random_angle_phi);
-			const double sinphi = std::sin(random_angle_phi);
 			
 			double new_px1 = p1.px * cosphi - p1.py * sinphi;
 			double new_py1 = p1.px * sinphi + p1.py * cosphi;
 			
-			for (size_t j = i+1; j < ev_particles.size(); j++) {
-				const auto& p2 = mixedev_particles[j];
+			for (size_t j = 0; j < ev_particles.size(); j++) {
+				const auto& p2 = ev_particles[j];
 
 				if (p1.pid != p2.pid) continue; //To ensure pairing between identical particles only
 				
@@ -236,7 +232,7 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 				if (qinv_index >= config.Q_num_bins) continue;
 				
 				local_den[Kperp_index][qinv_index] += 1.0;	
-				
+	
 				N_mixed++;		
 			}
 		}
@@ -263,6 +259,7 @@ void calculateInvCorrelation(const std::vector<std::vector<Particle>>& particles
 		for (int ii = 0; ii < config.Q_num_bins; ++ii) {
 			if (denominator[kTbin][ii] == 0) continue;
 			if (numerator[kTbin][ii] == 0) continue;
+			if (Num_Pairs[kTbin][ii] == 0) continue;
 
 			double correlfunc = 1 + ((numerator[kTbin][ii] / N_same) / (denominator[kTbin][ii] / N_mixed));
 			double Qinv_val = Qinv_Store[kTbin][ii] / Num_Pairs[kTbin][ii] ;
@@ -331,7 +328,6 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 	for (int event = 0; event < config.TotalEvents; event++) {
 
 		int tid = omp_get_thread_num();
-		
 		auto& local_num = local_numerators[tid];
 		auto& local_NPairs = local_Num_Pairs[tid];
 		auto& local_Qo = local_Q_out[tid];
@@ -373,14 +369,28 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 				double p2_out = p2.px * cos_phi - p2.py * sin_phi;
 				double p2_side = p2.px * sin_phi + p2.py * cos_phi;
 
+				// Rotating position vectors of p1
+				double out1 = p1.x * cos_phi - p1.y * sin_phi;
+				double side1 = p1.x * sin_phi + p1.y * cos_phi;
+
+				// Rotating position vectors of p2
+				double out2 = p2.x * cos_phi - p2.y * sin_phi;
+				double side2 = p2.x * sin_phi + p2.y * cos_phi;
+
 				// Transformation to LCMS frame
 				double beta = Kz / Ke;
 				double gamma = Ke / Mt;
+				
 				double pz1LCMS = gamma * (p1.pz - beta * p1.e);
 				double pz2LCMS = gamma * (p2.pz - beta * p2.e);
 				double e1LCMS = gamma * (p1.e - beta * p1.pz);
 				double e2LCMS = gamma * (p2.e - beta * p2.pz);
 
+				double z1LCMS = gamma * (p1.z - beta * p1.t);
+				double z2LCMS = gamma * (p2.z - beta * p2.t);
+				double t1LCMS = gamma * (p1.t - beta * p1.z);
+				double t2LCMS = gamma * (p2.t - beta * p2.z);
+				
 				double qo = p1_out - p2_out;
 				double qs = p1_side - p2_side;
 				double ql = pz1LCMS - pz2LCMS;
@@ -394,8 +404,12 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 				if (qside_index < 0 || qside_index >= config.Q_num_bins) continue;
 				if (qlong_index < 0 || qlong_index >= config.Q_num_bins) continue;
 				
-				double cosqx = std::cos((qe * (p1.t - p2.t) - qo * (p1.x - p2.x) 
-				- qs * (p1.y - p2.y) - ql * (p1.z - p2.z)) / hbar_c);
+				double dout = out1 - out2;
+				double dside = side1 - side2;
+				double dlong = z1LCMS - z2LCMS;
+				double dtime = t1LCMS - t2LCMS;
+
+				double cosqx = std::cos((qe*dtime - qo*dout - qs*dside - ql*dlong) / hbar_c);
 				
 				local_NPairs[Kperp_index][qout_index][qside_index][qlong_index] += 1.0;
 				local_num[Kperp_index][qout_index][qside_index][qlong_index] += cosqx;
@@ -422,26 +436,22 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 
 		int tid = omp_get_thread_num();
 		auto& local_den = local_denominators[tid];
-		
-		const double random_angle_phi = dist(gen);
-//		std::cout << "Random Angle:" << random_angle_phi << "  \n";
-
 		const auto& ev_particles = particles[event];
 		
 	for (int mixedev = 0; mixedev < config.MixedEvents; mixedev++){
-	
-		const auto& mixedev_particles = particles[mixedev];
+
+		const double random_angle_phi = dist(gen);
+		const double cosphi = std::cos(random_angle_phi);
+		const double sinphi = std::sin(random_angle_phi);
+
 		for (size_t i = 0; i < ev_particles.size(); i++) {
 			const auto& p1 = ev_particles[i];
-		
-			const double cosphi = std::cos(random_angle_phi);
-			const double sinphi = std::sin(random_angle_phi);
 			
 			double new_px1 = p1.px * cosphi - p1.py * sinphi;
 			double new_py1 = p1.px * sinphi + p1.py * cosphi;
 			
-			for (size_t j = i+1; j < ev_particles.size(); j++) {
-				const auto& p2 = mixedev_particles[j];
+			for (size_t j = 0; j < ev_particles.size(); j++) {
+				const auto& p2 = ev_particles[j];
 
 				if (p1.pid != p2.pid) continue; //To ensure pairing between identical particles only
 
@@ -475,6 +485,7 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 				// Transformation to LCMS frame
 				double beta = Kz / Ke;
 				double gamma = Ke / Mt;
+				
 				double pz1LCMS = gamma * (p1.pz - beta * p1.e);
 				double pz2LCMS = gamma * (p2.pz - beta * p2.e);
 				double e1LCMS = gamma * (p1.e - beta * p1.pz);
@@ -530,7 +541,8 @@ void calculate3DCorrelation(const std::vector<std::vector<Particle>>& particles,
 				for (int kk = 0; kk < config.Q_num_bins; kk++) {
 					if (denominator[kTbin][ii][jj][kk] == 0) continue;
 					if (numerator[kTbin][ii][jj][kk] == 0) continue;
-
+					if (Num_Pairs[kTbin][ii][jj][kk] == 0) continue;
+					
 					double correlfunc = 1 + ((numerator[kTbin][ii][jj][kk] / N_same) / (denominator[kTbin][ii][jj][kk] / N_mixed));
 								
 					double Qout_val = Q_out[kTbin][ii][jj][kk] / Num_Pairs[kTbin][ii][jj][kk] ;

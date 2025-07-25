@@ -21,7 +21,7 @@ Below, I provide an overview of the different folders present in this repository
 | `sample_outputs/`| Contains generated results, including graphs, tables, and processed data. These are mere samples used to verify proper working of codes and were not used for original analysis purposes.|
 | `scripts/`       | Contains bash script as a separate way to execute the entire framework without using Makefile.|
 | `src/`           | Core source codes, header files and main.cpp file for analysis, computations, and generating output files.|
-|`HBT_Fit\`        | Includes both Python and ROOT files to extract data from the correlation function outputs files and fit the data to obtain the HBT radii values. Also, plots the HBT radii with k_T.|
+|`HBT_Fit/`        | Includes both Python and ROOT files to extract data from the correlation function outputs files and fit the data to obtain the HBT radii values. Also, plots the HBT radii with k_T.|
 
 
 I will further modify the existing codes as well as add new codes to incorporate the fitting of the correlation functions and calculate the HBT radii values. 
